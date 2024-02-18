@@ -6,11 +6,6 @@ import (
 	jwt "github.com/appleboy/gin-jwt/v2"
 )
 
-type login struct {
-	Username string `form:"username" json:"username" binding:"required"`
-	Password string `form:"password" json:"password" binding:"required"`
-}
-
 const identityKey = "id"
 
 func CreateAuth() (*jwt.GinJWTMiddleware, error) {

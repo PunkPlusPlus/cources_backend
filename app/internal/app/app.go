@@ -5,7 +5,6 @@ import (
 	"github.com/PunkPlusPlus/cources_service/app/internal/auth"
 	"github.com/PunkPlusPlus/cources_service/app/internal/storage"
 	"github.com/PunkPlusPlus/cources_service/app/internal/users"
-	jwt "github.com/appleboy/gin-jwt/v2"
 	"github.com/gin-gonic/gin"
 	"github.com/rs/zerolog/log"
 	"net/http"
@@ -33,32 +32,20 @@ func (app *App) mapRoutes() {
 
 	group = app.router.Group("/api")
 	group.Use(authModule.MiddlewareFunc())
-	group.GET("/test", func(context *gin.Context) {
-		claims := jwt.ExtractClaims(context)
+	group.GET("/users/current", func(context *gin.Context) {
 		user, _ := context.Get("id")
-		context.JSON(200, gin.H{
-			"userID":   claims["id"],
-			"userName": user.(*users.User).UserName,
-			"text":     "Hello World.",
-		})
+		context.JSON(200, user)
 	})
+
 	group.GET("/users", func(context *gin.Context) {
 		db := storage.GetStorage()
-		rows := db.DB.QueryRow("SELECT id, name, email from public.users")
+		var usersList = []users.DbUser{}
+		result := db.DB.Find(&usersList)
+		err := result.Error
 		if err != nil {
 			panic(err)
 		}
-		var id int
-		var name string
-		var email string
-		err := rows.Scan(&id, &name, &email)
-		if err != nil {
-			panic(err)
-		}
-		context.JSON(200, gin.H{
-			"username": name,
-			"email":    email,
-		})
+		context.JSON(200, usersList)
 	})
 
 }
